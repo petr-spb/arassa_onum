@@ -1,13 +1,3 @@
-USE [UT_2025]
-GO
-
-/****** Object:  View [db_datawriter].[AN_SALE]    Script Date: 14.07.2025 9:21:59 ******/
-SET ANSI_NULLS ON
-GO
-
-SET QUOTED_IDENTIFIER ON
-GO
-
 
 ALTER VIEW [db_datawriter].[AN_SALE] AS
 select
@@ -36,7 +26,6 @@ select
 	RTU_NOM._Fld8208 as [КОЛИЧЕСТВО],
 	VIDY_CEN._Description AS [ВИДЫ_ЦЕН],
 	RTU_NOM._Fld8210 AS  [ЦЕНА],
-	--RTU_NOM._Fld8211 AS  [СТОИМОСТЬ],
 	RTU_NOM._Fld8218 AS [ПРОЦЕНТ_РУЧНОЙ_СКИДКИ],
 	RTU_NOM._Fld8216 AS [СУММА_РУЧНОЙ_СКИДКИ],
 	RTU_NOM._Fld8219 AS [ПРОЦЕНТ_АВТОМАТИЧЕСКОЙ_СКИДКИ],
@@ -51,7 +40,14 @@ select
 		WHEN VAL._Description = 'ТМТ' THEN CAST(ROUND((RTU_NOM._Fld8211 / (select [КУРС] from AN_KURS where [ВАЛЮТА] = 'USD')), 3) AS numeric(25,3))
 		ELSE RTU_NOM._Fld8211
 	END AS [СТОИМОСТЬ_В_ДОЛЛАРАХ],
-	(select [КУРС] from AN_KURS where [ВАЛЮТА] = 'USD') as [КУРС]
+	SUM(RTU_NOM._Fld8211) OVER (PARTITION BY AN_GROUP_NOM.[NAME_NOM]) AS [СУММА_ПО_ГРУППЕ_ТОВАРА],
+	CAST(ROUND(
+		(SUM(RTU_NOM._Fld8211) OVER (PARTITION BY AN_GROUP_NOM.[NAME_NOM]) / 
+		 NULLIF(SUM(RTU_NOM._Fld8211) OVER (), 0)) * 100, 
+		2) AS numeric(25,2)) AS [ПРОЦЕНТ_ПО_ГРУППЕ_ТОВАРА]
+
+	
+	--(select [КУРС] from AN_KURS where [ВАЛЮТА] = 'USD') as [КУРС]
 
 	--rtu._Fld8195 as [КУРС_ВАЛЮТЫ] --НЕ ОТОБРАЖАЕТ КУРС ВАЛЮТ, ТОЛЬКО 1
 	--(SELECT NOM_PROMO._Description
@@ -91,7 +87,7 @@ LEFT JOIN AN_KURS AS KURS ON KURS.ID_VAL = VAL._IDRRef
 WHERE RTU._Marked = 0X00 AND RTU._Posted = 0X01 AND NOM._Marked = 0X00 --and RTU._Number = '01ЦБ-012904'
 --and VAL._Description <> 'ТМТ'
 
---ORDER BY RTU._Number 
+--ORDER BY RTU._Number
 GO
 
 
