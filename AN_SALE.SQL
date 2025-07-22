@@ -91,7 +91,7 @@ LEFT JOIN AN_KURS AS KURS ON KURS.ID_VAL = VAL._IDRRef
 WHERE RTU._Marked = 0X00 AND RTU._Posted = 0X01 AND NOM._Marked = 0X00 --and RTU._Number = '01ЦБ-012904'
 --and VAL._Description <> 'ТМТ'
 
---ORDER BY RTU._Number
+--ORDER BY RTU._Number 
 GO
 
 
